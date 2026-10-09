@@ -39,9 +39,9 @@ export function LearningPathReader({
     onRetry,
 }: {
     path: LearningPath;
-    onRetry: (pathId: number) => void;
+    onRetry: (pathId: string) => void;
 }) {
-    const [openMilestone, setOpenMilestone] = useState<number | null>(
+    const [openMilestone, setOpenMilestone] = useState<string | null>(
         path.milestones[0]?.id ?? null,
     );
 

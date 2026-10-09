@@ -9,17 +9,28 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\DB;
 
+/** @phpstan-import-type LearningPathInput from OpenRouterLearningPathGenerator */
 class GenerateLearningPathRoadmap implements ShouldQueue
 {
     use Batchable, Queueable;
 
     public int $tries = 3;
 
+    /** @var list<int> */
     public array $backoff = [10, 30, 120];
 
     public int $timeout = 150;
 
-    public function __construct(public int $learningPathId, public array $input) {}
+    /** @var LearningPathInput */
+    public array $input;
+
+    /**
+     * @param  LearningPathInput  $input
+     */
+    public function __construct(public string $learningPathId, array $input)
+    {
+        $this->input = $input;
+    }
 
     public function handle(OpenRouterLearningPathGenerator $generator): void
     {
@@ -27,10 +38,16 @@ class GenerateLearningPathRoadmap implements ShouldQueue
             return;
         }
 
+        /** @var LearningPath $path */
         $path = LearningPath::query()->findOrFail($this->learningPathId);
         $path->update(['generation_status' => 'generating_roadmap']);
         $generated = $generator->generate($this->input);
 
+        if ($this->batch()?->cancelled()) {
+            return;
+        }
+
+        /** @var list<string> $topicIds */
         $topicIds = DB::transaction(function () use ($path, $generated): array {
             $path->update([
                 'title' => $generated['title'],
@@ -61,8 +78,12 @@ class GenerateLearningPathRoadmap implements ShouldQueue
             return $topicIds;
         });
 
+        if ($this->batch()?->cancelled()) {
+            return;
+        }
+
         $this->batch()?->add(array_map(
-            fn (int $topicId) => (new GenerateLearningPathTopicLesson($topicId))->onQueue('learning-generation'),
+            fn (string $topicId) => (new GenerateLearningPathTopicLesson($topicId))->onQueue('learning-generation'),
             $topicIds,
         ));
     }

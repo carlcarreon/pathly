@@ -1,5 +1,5 @@
 export type GeneratedTopic = {
-    id: number;
+    id: string;
     title: string;
     description: string | null;
     content_type: string;
@@ -8,7 +8,7 @@ export type GeneratedTopic = {
 };
 
 export type GeneratedMilestone = {
-    id: number;
+    id: string;
     position: number;
     title: string;
     description: string | null;
@@ -16,7 +16,7 @@ export type GeneratedMilestone = {
 };
 
 export type GeneratedPath = {
-    id: number;
+    id: string;
     title: string;
     description: string;
     level: string;
@@ -26,7 +26,7 @@ export type GeneratedPath = {
 };
 
 export type UploadedResource = {
-    id: number;
+    id: string;
     name: string;
     url: string;
     mime_type: string;

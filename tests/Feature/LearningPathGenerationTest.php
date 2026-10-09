@@ -211,7 +211,7 @@ it('marks a topic lesson as failed when all retries are exhausted', function () 
     expect($topic->refresh()->lesson_status)->toBe('failed');
 });
 
-it('only lets the owner poll generation status and retry incomplete lessons', function () {
+it('only lets the owner poll generation status, retry, and cancel generation', function () {
     Bus::fake();
     $owner = User::factory()->create();
     $otherUser = User::factory()->create();
@@ -230,6 +230,9 @@ it('only lets the owner poll generation status and retry incomplete lessons', fu
     $this->actingAs($otherUser)
         ->postJson(route('paths.generation-retry', $path))
         ->assertForbidden();
+    $this->actingAs($otherUser)
+        ->postJson(route('paths.generation-cancel', $path))
+        ->assertForbidden();
 
     $this->actingAs($owner)
         ->getJson(route('paths.generation-status', $path))
@@ -246,6 +249,25 @@ it('only lets the owner poll generation status and retry incomplete lessons', fu
     Bus::assertBatched([
         fn (GenerateLearningPathTopicLesson $job) => $job->topicId === $topic->id,
     ]);
+});
+
+it('cancels an active learning path generation and keeps it private', function () {
+    Bus::fake();
+    $user = User::factory()->create();
+
+    $this->actingAs($user)->postJson(route('paths.generate'), generationInput())
+        ->assertAccepted();
+    $path = LearningPath::query()->sole();
+
+    $this->actingAs($user)
+        ->postJson(route('paths.generation-cancel', $path))
+        ->assertOk()
+        ->assertJsonPath('status', 'cancelled');
+
+    expect($path->refresh())
+        ->generation_status->toBe('cancelled')
+        ->is_public->toBeFalse();
+    expect(Bus::findBatch($path->generation_batch_id)?->cancelled())->toBeTrue();
 });
 
 it('provides the My Learnings payload through learning path resources', function () {

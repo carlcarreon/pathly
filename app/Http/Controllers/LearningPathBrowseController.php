@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\LearningPathResource;
+use App\Models\LearningPath;
 use App\Repositories\LearningPathRepository;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
@@ -34,6 +35,10 @@ class LearningPathBrowseController extends Controller
         ]);
     }
 
+    /**
+     * @param  Collection<int, LearningPath>  $paths
+     * @return array<int, mixed>
+     */
     private function paths(Collection $paths): array
     {
         return LearningPathResource::collection($paths)->resolve(request());

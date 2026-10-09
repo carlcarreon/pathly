@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import {
     Activity,
     Award,
@@ -10,9 +10,10 @@ import {
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { MetricCard } from '@/components/metric-card';
 import { cn } from '@/lib/utils';
 
-const people = [
+const fallbackPeople = [
     [
         'Alex Chen',
         '@alexchen',
@@ -81,6 +82,18 @@ const people = [
 
 export default function UsersPage() {
     const [filter, setFilter] = useState('All');
+    const { users = [], stats = [] } = usePage().props as unknown as {
+        users?: Array<{ id: string; name: string; email: string; paths_count: number; joined_at: string | null }>;
+        stats?: Array<{ label: string; value: string }>;
+    };
+    const people = users.map((user) => [
+        user.name,
+        `@${user.email.split('@')[0]}`,
+        user.paths_count > 0 ? 'Creator' : 'Learner',
+        'Pathly member',
+        user.email,
+        'from-emerald-300/40 to-slate-900',
+    ] as const);
     return (
         <>
             <Head title="Users" />
@@ -93,34 +106,10 @@ export default function UsersPage() {
                             on Pathly.
                         </p>
                         <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                            {[
-                                ['Total Users', '2,482', Users],
-                                ['Active This Week', '864', Activity],
-                                ['Path Creators', '312', UserRound],
-                                ['Top Streak', '97 days', Flame],
-                            ].map(([label, value, Icon]) => (
-                                <Card
-                                    key={label as string}
-                                    className="border-border/70 bg-card/60 pt-0 shadow-none"
-                                >
-                                    <CardContent className="flex items-center gap-4 px-4 py-2">
-                                        <span className="flex size-12 items-center justify-center rounded-full bg-emerald-400/10 text-emerald-300">
-                                            <Icon size={22} />
-                                        </span>
-                                        <div>
-                                            <strong className="block text-2xl">
-                                                {value as string}
-                                            </strong>
-                                            <p className="text-sm text-muted-foreground">
-                                                {label as string}
-                                            </p>
-                                            <p className="mt-1 text-xs text-emerald-300">
-                                                ↗ +12% from last month
-                                            </p>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))}
+                            {stats.map(({ label, value }, index) => {
+                                const Icon = [Users, Activity, UserRound, Flame][index] ?? Users;
+                                return <MetricCard key={label} label={label} value={value} note="Real database data" icon={Icon} />;
+                            })}
                         </div>
                         <div className="mt-6 flex flex-wrap gap-2">
                             {[
@@ -146,7 +135,7 @@ export default function UsersPage() {
                             ))}
                         </div>
                         <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                            {people.map(
+                            {people.length > 0 ? people.map(
                                 ([name, handle, role, category, bio, tone]) => (
                                     <Card
                                         key={name}
@@ -200,7 +189,7 @@ export default function UsersPage() {
                                         </CardContent>
                                     </Card>
                                 ),
-                            )}
+                            ) : <div className="col-span-full rounded-xl border border-dashed border-border/70 p-12 text-center text-sm text-muted-foreground">No users found.</div>}
                         </div>
                     </main>
                     <aside className="space-y-4">
@@ -247,7 +236,7 @@ export default function UsersPage() {
                                     <Award className="text-amber-400" />
                                     Top Contributors
                                 </h2>
-                                {people.slice(0, 5).map(([name], i) => (
+                                {people.length > 0 ? people.slice(0, 5).map(([name], i) => (
                                     <div
                                         key={name}
                                         className="flex items-center gap-3 py-3"
@@ -262,7 +251,14 @@ export default function UsersPage() {
                                             {24 - i * 3} paths
                                         </span>
                                     </div>
-                                ))}
+                                )) : (
+                                    <div className="mt-4 rounded-xl border border-dashed border-border/70 p-6 text-center">
+                                        <Award className="mx-auto size-8 text-emerald-300" />
+                                        <p className="mt-3 text-sm text-muted-foreground">
+                                            Top contributors will appear as users create and complete learning paths.
+                                        </p>
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
                     </aside>

@@ -4,17 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Models\LearningPath;
 use App\Models\LearningPathTopic;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class LearningPathResourceController extends Controller
 {
-    public function store(Request $request, LearningPath $learningPath)
+    public function store(Request $request, LearningPath $learningPath): JsonResponse
     {
         abort_unless($learningPath->user_id === $request->user()->id, 403);
         $data = $request->validate(['file' => ['required', 'file', 'max:20480', 'mimes:pdf,doc,docx,ppt,pptx,xls,xlsx,png,jpg,jpeg,webp'], 'topic_id' => ['nullable', 'integer']]);
-        $topic = isset($data['topic_id']) ? LearningPathTopic::findOrFail($data['topic_id']) : null;
+        /** @var array{file: UploadedFile, topic_id?: int} $data */
+        $topic = isset($data['topic_id'])
+            ? LearningPathTopic::query()->findOrFail($data['topic_id'])
+            : null;
         abort_if($topic && $topic->milestone->learning_path_id !== $learningPath->id, 422);
         $file = $data['file'];
         $path = $file->storePubliclyAs('learning-paths/'.$learningPath->id.'/resources', Str::uuid().'.'.$file->extension(), 's3');

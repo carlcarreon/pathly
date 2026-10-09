@@ -9,9 +9,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('learning_path_resources', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('learning_path_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('learning_path_topic_id')->nullable()->constrained()->nullOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('learning_path_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('learning_path_topic_id')->nullable()->constrained()->nullOnDelete();
             $table->string('name');
             $table->string('disk')->default('s3');
             $table->string('path');

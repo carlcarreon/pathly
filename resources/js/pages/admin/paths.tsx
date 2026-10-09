@@ -14,7 +14,9 @@ import {
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { MetricCard } from '@/components/metric-card';
 import { cn } from '@/lib/utils';
+import { EmptyState } from '@/components/empty-state';
 
 type DatabasePath = {
     id: number;
@@ -106,8 +108,7 @@ export default function AdminPaths() {
     const { paths: databasePaths = [] } = usePage().props as unknown as {
         paths?: DatabasePath[];
     };
-    const paths: AdminPathDisplay[] = databasePaths.length
-        ? databasePaths.map((path) => [
+    const paths: AdminPathDisplay[] = databasePaths.map((path) => [
               path.title,
               path.category ?? 'General',
               path.generation_source === 'openrouter'
@@ -115,8 +116,13 @@ export default function AdminPaths() {
                   : 'Community',
               `${path.topics_count} topics`,
               'from-emerald-300/30 via-slate-700 to-slate-950',
-          ])
-        : fallbackPaths;
+          ]);
+    const metrics = [
+        ['Total Paths', String(databasePaths.length), BookOpen],
+        ['AI Generated', String(databasePaths.filter((path) => path.generation_source === 'openrouter').length), Sparkles],
+        ['Community Created', String(databasePaths.filter((path) => path.generation_source !== 'openrouter').length), Users],
+        ['Categories', String(new Set(databasePaths.map((path) => path.category).filter(Boolean)).size), Layers3],
+    ] as const;
     const visible = paths.filter(
         (path) => filter === 'All' || path[2] === filter,
     );
@@ -134,33 +140,8 @@ export default function AdminPaths() {
                             skills to learn.
                         </p>
                         <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                            {[
-                                ['Total Paths', '500+', BookOpen],
-                                ['AI Generated', '320+', Sparkles],
-                                ['Community Created', '180+', Users],
-                                ['Categories', '10+', Layers3],
-                            ].map(([label, value, Icon]) => (
-                                <Card
-                                    key={label as string}
-                                    className="border-border/70 bg-card/60 py-2 shadow-none"
-                                >
-                                    <CardContent className="flex items-center gap-4 px-4 py-2">
-                                        <span className="flex size-12 items-center justify-center rounded-full bg-emerald-400/10 text-emerald-300">
-                                            <Icon size={22} />
-                                        </span>
-                                        <div>
-                                            <strong className="block text-2xl">
-                                                {value as string}
-                                            </strong>
-                                            <p className="text-sm text-muted-foreground">
-                                                {label as string}
-                                            </p>
-                                            <p className="mt-1 text-xs text-emerald-300">
-                                                ↗ +24 this month
-                                            </p>
-                                        </div>
-                                    </CardContent>
-                                </Card>
+                            {metrics.map(([label, value, Icon]) => (
+                                <MetricCard key={label as string} label={label as string} value={value as string} note="Real database data" icon={Icon} />
                             ))}
                         </div>
                         <div className="mt-6 flex flex-wrap gap-2">
@@ -187,7 +168,7 @@ export default function AdminPaths() {
                                 </Button>
                             ))}
                         </div>
-                        <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                        {visible.length > 0 ? <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                             {visible.map(
                                 ([title, category, source, learners, tone]) => {
                                     const Icon =
@@ -238,7 +219,11 @@ export default function AdminPaths() {
                                     );
                                 },
                             )}
-                        </div>
+                        </div> : <div className="mt-4 rounded-xl border border-dashed border-border/70 p-6 text-center">
+                            <BookOpen className="mx-auto size-8 text-emerald-300" />
+                            <h2 className="mt-3 text-lg font-semibold">No learning paths yet</h2>
+                            <p className="mt-2 text-sm text-muted-foreground">Generated paths will appear here when users create them.</p>
+                        </div>}
                     </main>
                     <aside className="space-y-4">
                         <Card className="border-border/70 bg-card/60 py-2 shadow-none">
@@ -246,9 +231,7 @@ export default function AdminPaths() {
                                 <h2 className="font-semibold">
                                     Popular This Week
                                 </h2>
-                                {paths
-                                    .slice(0, 5)
-                                    .map(([title, category, , learners], i) => (
+                                {paths.length > 0 ? paths.slice(0, 5).map(([title, category, , learners], i) => (
                                         <div
                                             key={title}
                                             className="flex items-center gap-3 border-b border-border/50 py-3 last:border-0"
@@ -265,7 +248,7 @@ export default function AdminPaths() {
                                                 </p>
                                             </div>
                                         </div>
-                                    ))}
+                                    )) : <EmptyState icon={BarChart3} description="No popular paths yet." />}
                             </CardContent>
                         </Card>
                         <Card className="border-border/70 bg-card/60 py-2 shadow-none">
@@ -273,14 +256,7 @@ export default function AdminPaths() {
                                 <h2 className="font-semibold">
                                     Top Categories
                                 </h2>
-                                {[
-                                    'Technology',
-                                    'Design',
-                                    'Language',
-                                    'Business',
-                                    'Lifestyle',
-                                    'Personal Growth',
-                                ].map((category, i) => (
+                                {Array.from(new Set(databasePaths.map((path) => path.category).filter((category): category is string => Boolean(category)))).length > 0 ? Array.from(new Set(databasePaths.map((path) => path.category).filter((category): category is string => Boolean(category)))).map((category) => (
                                     <div
                                         key={category}
                                         className="flex items-center gap-3 border-b border-border/50 py-3 last:border-0"
@@ -291,11 +267,8 @@ export default function AdminPaths() {
                                         <span className="flex-1 text-sm">
                                             {category}
                                         </span>
-                                        <span className="text-xs text-muted-foreground">
-                                            {120 - i * 15}+ paths
-                                        </span>
                                     </div>
-                                ))}
+                                )) : <EmptyState icon={Layers3} description="No categories yet." />}
                             </CardContent>
                         </Card>
                     </aside>

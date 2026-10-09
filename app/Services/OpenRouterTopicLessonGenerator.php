@@ -24,8 +24,12 @@ class OpenRouterTopicLessonGenerator
             ],
             'json' => [
                 'model' => config('services.openrouter.model'),
+                'max_tokens' => (int) config(
+                    'services.openrouter.lesson_max_tokens',
+                ),
+                'temperature' => 0.2,
                 'messages' => [
-                    ['role' => 'system', 'content' => 'You are a clear, accurate learning-content writer. Return Markdown only. Do not use raw HTML.'],
+                    ['role' => 'system', 'content' => 'You write concise, accurate learning summaries. Return Markdown only. Do not use raw HTML.'],
                     ['role' => 'user', 'content' => $this->prompt($path->title, $topic)],
                 ],
             ],
@@ -43,11 +47,11 @@ class OpenRouterTopicLessonGenerator
     private function prompt(string $pathTitle, LearningPathTopic $topic): string
     {
         return <<<PROMPT
-Write a self-contained structured learning lesson in Markdown for the topic "{$topic->title}" in the learning path "{$pathTitle}".
+Write a concise, self-contained learning summary in Markdown for the topic "{$topic->title}" in the learning path "{$pathTitle}".
 Topic type: {$topic->content_type}.
 Topic overview: {$topic->description}
 
-Include an engaging introduction, clearly headed explanations, practical examples (with fenced code only when relevant), a concise key-takeaways section, and 2-3 suggested next steps or resources. Be accurate, beginner-friendly, and avoid raw HTML.
+Target 150-220 words and never exceed 280 words. Include only: a short overview, 3 key points, one small practical example when relevant (a fenced code block only for technical topics), and 2 key takeaways. Be accurate, beginner-friendly, and avoid raw HTML, filler, resource lists, and repeated explanations.
 PROMPT;
     }
 }

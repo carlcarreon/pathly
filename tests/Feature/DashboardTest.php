@@ -14,3 +14,11 @@ test('authenticated users can visit the dashboard', function () {
     $response = $this->get(route('dashboard'));
     $response->assertOk();
 });
+
+test('users can visit the dashboard without verifying an email address', function () {
+    $user = User::factory()->create(['email_verified_at' => null]);
+
+    $this->actingAs($user)
+        ->get(route('dashboard'))
+        ->assertOk();
+});

@@ -6,7 +6,7 @@ use App\Models\LearningPath;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class LearningPathRepository
 {
@@ -41,10 +41,10 @@ class LearningPathRepository
     /**
      * The complete relation graph required by the learning-path reader.
      *
-     * @param  Builder<LearningPath>|Relation<LearningPath, LearningPath>  $query
+     * @param  Builder<LearningPath>|HasMany<LearningPath, User>  $query
      * @return Collection<int, LearningPath>
      */
-    private function getPaths(Builder|Relation $query): Collection
+    private function getPaths(Builder|HasMany $query): Collection
     {
         return $query
             ->with(['user:id,name', 'resources', 'milestones.topics.resources'])

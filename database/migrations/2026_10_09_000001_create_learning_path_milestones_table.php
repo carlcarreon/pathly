@@ -9,8 +9,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('learning_path_milestones', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('learning_path_id')->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('learning_path_id')->constrained()->cascadeOnDelete();
             $table->unsignedSmallInteger('position');
             $table->string('title');
             $table->text('description')->nullable();

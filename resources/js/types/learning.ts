@@ -1,12 +1,12 @@
 export type LearningResource = {
-    id: number;
+    id: string;
     name: string;
     url: string;
     mime_type: string;
 };
 
 export type LearningTopic = {
-    id: number;
+    id: string;
     position: number;
     title: string;
     description: string | null;
@@ -17,7 +17,7 @@ export type LearningTopic = {
 };
 
 export type LearningMilestone = {
-    id: number;
+    id: string;
     position: number;
     title: string;
     description: string | null;
@@ -25,7 +25,7 @@ export type LearningMilestone = {
 };
 
 export type LearningPath = {
-    id: number;
+    id: string;
     title: string;
     description: string;
     category: string | null;

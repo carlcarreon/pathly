@@ -38,6 +38,14 @@ return [
     'openrouter' => [
         'key' => env('OPENROUTER_API_KEY'),
         'model' => env('OPENROUTER_MODEL', 'openrouter/free'),
+        'roadmap_max_tokens' => (int) env(
+            'OPENROUTER_ROADMAP_MAX_TOKENS',
+            2200,
+        ),
+        'lesson_max_tokens' => (int) env(
+            'OPENROUTER_LESSON_MAX_TOKENS',
+            450,
+        ),
         'base_url' => env(
             'OPENROUTER_BASE_URL',
             'https://openrouter.ai/api/v1'

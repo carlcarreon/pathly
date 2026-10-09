@@ -9,8 +9,8 @@ export function LearningPathList({
     onSelect,
 }: {
     paths: LearningPath[];
-    selectedPathId: number | null;
-    onSelect: (id: number) => void;
+    selectedPathId: string | null;
+    onSelect: (id: string) => void;
 }) {
     return (
         <div className="flex min-h-0 flex-1 flex-col">

@@ -12,6 +12,7 @@ import {
     Sparkles,
     Target,
     Upload,
+    X,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +23,10 @@ import {
     CollapsibleContent,
     CollapsibleTrigger,
 } from '@/components/ui/collapsible';
+import type {
+    GenerationPhase,
+    GenerationTopicProgress,
+} from '@/hooks/use-learning-path-generation';
 import { cn } from '@/lib/utils';
 import type {
     GeneratedPath,
@@ -30,34 +35,61 @@ import type {
 } from '@/types/paths';
 
 export function CreatePathPanel({
+    status,
     error,
     generatedPath,
     isGenerating,
     isUploading,
     message,
+    phase,
     progress,
     onEdit,
+    onCancel,
     onGenerate,
     onRetry,
     onUpload,
+    topics,
     uploadedResources,
 }: {
+    status: string | null;
     error: string | null;
     generatedPath: GeneratedPath | null;
     isGenerating: boolean;
     isUploading: boolean;
     message: string;
+    phase: GenerationPhase;
     progress: number;
     onEdit: () => void;
+    onCancel: () => void;
     onGenerate: () => void;
     onRetry: () => void;
     onUpload: (file: File) => void;
+    topics: GenerationTopicProgress;
     uploadedResources: UploadedResource[];
 }) {
     const [openWeek, setOpenWeek] = useState(0);
 
     if (isGenerating)
-        return <GenerationProgress message={message} progress={progress} />;
+        return (
+            <GenerationProgress
+                message={message}
+                onCancel={onCancel}
+                phase={phase}
+                progress={progress}
+                topics={topics}
+            />
+        );
+
+    if (status === 'cancelled') {
+        return (
+            <PanelState
+                title="Generation canceled"
+                description="This learning path was kept private and no further AI requests will be made."
+                action="Create another path"
+                onAction={onEdit}
+            />
+        );
+    }
 
     if (generatedPath?.generation_status === 'failed') {
         return (
@@ -271,16 +303,27 @@ function PanelState({
 
 function GenerationProgress({
     message,
+    onCancel,
+    phase,
     progress,
+    topics,
 }: {
     message: string;
+    onCancel: () => void;
+    phase: GenerationPhase;
     progress: number;
+    topics: GenerationTopicProgress;
 }) {
     const steps = [
-        ['Understanding your goal', 20],
-        ['Designing your roadmap', 60],
-        ['Saving your learning path', 90],
+        { label: 'Prepare your request', phase: 'prepare' },
+        { label: 'Generate your roadmap', phase: 'roadmap' },
+        { label: 'Generate lesson content', phase: 'lessons' },
+        { label: 'Publish your learning path', phase: 'publish' },
     ] as const;
+    const activeStep = Math.max(
+        steps.findIndex((step) => step.phase === phase),
+        0,
+    );
     return (
         <Card className="h-full min-h-[420px] border-emerald-400/20 bg-card/50 shadow-none">
             <CardContent className="flex h-full min-h-[420px] flex-col justify-center p-8">
@@ -304,14 +347,16 @@ function GenerationProgress({
                     {progress}%
                 </p>
                 <ol className="mt-5 space-y-3">
-                    {steps.map(([label, threshold]) => {
-                        const complete = progress >= threshold;
+                    {steps.map((step, index) => {
+                        const complete = index < activeStep;
+                        const active = index === activeStep;
+
                         return (
                             <li
-                                key={label}
+                                key={step.phase}
                                 className={cn(
                                     'flex items-center gap-3 text-sm transition-colors',
-                                    complete
+                                    complete || active
                                         ? 'text-foreground'
                                         : 'text-muted-foreground',
                                 )}
@@ -321,16 +366,39 @@ function GenerationProgress({
                                         'flex size-6 items-center justify-center rounded-full border',
                                         complete
                                             ? 'border-emerald-300 bg-emerald-300 text-emerald-950'
-                                            : 'border-border text-muted-foreground',
+                                            : active
+                                              ? 'border-emerald-300 text-emerald-300'
+                                              : 'border-border text-muted-foreground',
                                     )}
                                 >
-                                    {complete ? <Check size={14} /> : '•'}
+                                    {complete ? (
+                                        <Check size={14} />
+                                    ) : active ? (
+                                        <LoaderCircle className="size-3.5 animate-spin" />
+                                    ) : (
+                                        '•'
+                                    )}
                                 </span>
-                                {label}
+                                <span>{step.label}</span>
+                                {step.phase === 'lessons' &&
+                                    topics.total > 0 && (
+                                        <span className="text-xs text-muted-foreground">
+                                            {topics.completed} of {topics.total}
+                                        </span>
+                                    )}
                             </li>
                         );
                     })}
                 </ol>
+                <Button
+                    type="button"
+                    variant="outline"
+                    className="mt-7 w-fit"
+                    onClick={onCancel}
+                >
+                    <X />
+                    Cancel generation
+                </Button>
             </CardContent>
         </Card>
     );

@@ -15,11 +15,12 @@ class GenerateLearningPathTopicLesson implements ShouldQueue
 
     public int $tries = 3;
 
+    /** @var list<int> */
     public array $backoff = [10, 30, 120];
 
     public int $timeout = 150;
 
-    public function __construct(public int $topicId) {}
+    public function __construct(public string $topicId) {}
 
     public function handle(OpenRouterTopicLessonGenerator $generator): void
     {
@@ -27,10 +28,17 @@ class GenerateLearningPathTopicLesson implements ShouldQueue
             return;
         }
 
+        /** @var LearningPathTopic $topic */
         $topic = LearningPathTopic::query()->with('milestone.learningPath')->findOrFail($this->topicId);
         $topic->update(['lesson_status' => 'generating']);
+        $content = $generator->generate($topic);
+
+        if ($this->batch()?->cancelled()) {
+            return;
+        }
+
         $topic->update([
-            'content' => $generator->generate($topic),
+            'content' => $content,
             'lesson_status' => 'completed',
         ]);
     }

@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Carbon\CarbonImmutable;
+use Illuminate\Foundation\DevCommands;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
@@ -24,6 +25,13 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+
+        if (app()->runningInConsole()) {
+            DevCommands::artisan(
+                'queue:listen --queue=learning-generation,default --tries=3 --timeout=180',
+                'queue',
+            );
+        }
     }
 
     /**

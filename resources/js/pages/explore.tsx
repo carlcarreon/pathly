@@ -20,6 +20,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { EmptyState } from '@/components/empty-state';
 
 const categories = [
     'All',
@@ -148,8 +149,7 @@ export default function Explore() {
     const { paths: databasePaths = [] } = usePage().props as unknown as {
         paths?: DatabasePath[];
     };
-    const catalogPaths: CatalogPath[] = databasePaths.length
-        ? databasePaths.map((path) => ({
+    const catalogPaths: CatalogPath[] = databasePaths.map((path) => ({
               title: path.title,
               kind: path.category ?? 'General',
               description: path.description,
@@ -158,28 +158,7 @@ export default function Explore() {
               topics: `${path.topics_count} topics`,
               tone: 'from-emerald-300/30 via-slate-700 to-slate-950',
               Icon: iconMap[path.category as keyof typeof iconMap] ?? Sparkles,
-          }))
-        : fallbackPaths.map(
-              ([
-                  title,
-                  kind,
-                  description,
-                  level,
-                  duration,
-                  topics,
-                  tone,
-                  Icon,
-              ]) => ({
-                  title,
-                  kind,
-                  description,
-                  level,
-                  duration,
-                  topics,
-                  tone,
-                  Icon,
-              }),
-          );
+          }));
     const visible = catalogPaths.filter(
         (path) => category === 'All' || path.kind === category,
     );
@@ -223,35 +202,22 @@ export default function Explore() {
                                 <Button variant="outline">Most Popular</Button>
                             </div>
                         </div>
-                        <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                            {visible.map((path) => (
-                                <PathCard key={path.title} {...path} />
-                            ))}
-                        </div>
+                        {visible.length > 0 ? (
+                            <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                                {visible.map((path) => (
+                                    <PathCard key={path.title} {...path} />
+                                ))}
+                            </div>
+                        ) : (
+                            <EmptyState className="mt-4 p-12" icon={Sparkles} title="No public learning paths yet" description="Completed public paths will appear here." />
+                        )}
                     </main>
                     <aside className="space-y-4">
                         <SideCard title="Recommended for You" icon={Sparkles}>
-                            <MiniPath
-                                title="Python for Beginners"
-                                kind="Technology"
-                                detail="12 weeks · 28 topics"
-                                tone="from-blue-400 to-yellow-300"
-                            />
-                            <MiniPath
-                                title="Mindfulness & Meditation"
-                                kind="Personal Growth"
-                                detail="4 weeks · 12 topics"
-                                tone="from-stone-300 to-amber-800"
-                            />
-                            <MiniPath
-                                title="Digital Marketing Basics"
-                                kind="Business"
-                                detail="8 weeks · 20 topics"
-                                tone="from-slate-300 to-amber-800"
-                            />
+                            <EmptyState icon={Sparkles} description="Recommendations will appear as you build your learning history." />
                         </SideCard>
                         <SideCard title="Trending Categories" icon={TrendingUp}>
-                            {categories.slice(1).map((item, index) => {
+                            {databasePaths.length > 0 ? categories.slice(1).map((item, index) => {
                                 const Icon =
                                     iconMap[item as keyof typeof iconMap];
                                 return (
@@ -270,27 +236,10 @@ export default function Explore() {
                                         </span>
                                     </div>
                                 );
-                            })}
+                            }) : <EmptyState icon={TrendingUp} description="Trending categories will appear when paths are available." />}
                         </SideCard>
                         <SideCard title="Popular This Week" icon={BarChart3}>
-                            <MiniPath
-                                title="Japanese Language for Beginners"
-                                kind="#1"
-                                detail="24K learners"
-                                tone="from-sky-200 to-orange-300"
-                            />
-                            <MiniPath
-                                title="Learn Laravel"
-                                kind="#2"
-                                detail="18K learners"
-                                tone="from-red-400 to-red-800"
-                            />
-                            <MiniPath
-                                title="Data Science Foundations"
-                                kind="#3"
-                                detail="12K learners"
-                                tone="from-cyan-400 to-blue-950"
-                            />
+                            <EmptyState icon={BarChart3} description="Popularity data will appear as more paths are completed." />
                         </SideCard>
                     </aside>
                 </div>

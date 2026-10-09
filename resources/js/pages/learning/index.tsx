@@ -19,7 +19,7 @@ export default function LearningIndex() {
     const { paths = [] } = usePage().props as unknown as {
         paths?: LearningPath[];
     };
-    const [selectedPathId, setSelectedPathId] = useState<number | null>(
+    const [selectedPathId, setSelectedPathId] = useState<string | null>(
         paths[0]?.id ?? null,
     );
     const [isPathListOpen, setIsPathListOpen] = useState(false);
@@ -28,12 +28,12 @@ export default function LearningIndex() {
         [paths, selectedPathId],
     );
 
-    const selectPath = (id: number) => {
+    const selectPath = (id: string) => {
         setSelectedPathId(id);
         setIsPathListOpen(false);
     };
 
-    const retryGeneration = async (pathId: number) => {
+    const retryGeneration = async (pathId: string) => {
         await fetch(`/paths/${pathId}/generation-retry`, {
             method: 'POST',
             credentials: 'same-origin',

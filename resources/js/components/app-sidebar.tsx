@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import {
+    ArrowLeft,
     BookOpen,
     Compass,
     FolderGit2,
@@ -8,6 +9,7 @@ import {
     Sparkles,
     Users,
 } from 'lucide-react';
+import { usePage } from '@inertiajs/react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -66,6 +68,9 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
+    const { url } = usePage();
+    const isCreatePath = url.includes('/paths/create');
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -86,7 +91,28 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
+                {isCreatePath ? (
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton asChild>
+                                <Link href="/paths/create">
+                                    <ArrowLeft className="h-5 w-5" />
+                                    <span>Choose another method</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton asChild>
+                                <Link href={dashboard()}>
+                                    <LayoutGrid className="h-5 w-5" />
+                                    <span>Back to dashboard</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                ) : (
+                    <NavFooter items={footerNavItems} className="mt-auto" />
+                )}
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

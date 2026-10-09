@@ -2,7 +2,7 @@ services:
     pgsql:
         image: 'postgres:18-alpine'
         ports:
-            - '${FORWARD_DB_PORT:-5432}:5432'
+            - '127.0.0.1:${FORWARD_DB_PORT:-5432}:5432'
         environment:
             PGPASSWORD: '${DB_PASSWORD}'
             POSTGRES_DB: '${DB_DATABASE}'
@@ -27,7 +27,7 @@ services:
     redis:
         image: 'redis:alpine'
         ports:
-            - '${FORWARD_REDIS_PORT:-6379}:6379'
+            - '127.0.0.1:${FORWARD_REDIS_PORT:-6379}:6379'
         volumes:
             - 'sail-redis:/data'
         networks:
@@ -42,8 +42,8 @@ services:
     rustfs:
         image: 'rustfs/rustfs:latest'
         ports:
-            - '${FORWARD_RUSTFS_PORT:-9000}:9000'
-            - '${FORWARD_RUSTFS_CONSOLE_PORT:-9001}:9001'
+            - '127.0.0.1:${FORWARD_RUSTFS_PORT:-9000}:9000'
+            - '127.0.0.1:${FORWARD_RUSTFS_CONSOLE_PORT:-9001}:9001'
         environment:
             RUSTFS_VOLUMES: /data
             RUSTFS_ADDRESS: '0.0.0.0:9000'
