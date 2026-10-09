@@ -7,6 +7,7 @@ import {
     Check,
     ChevronRight,
     Clock3,
+    Code2,
     Flame,
     MoreVertical,
     Play,
@@ -374,6 +375,30 @@ function ActivityCard() {
     );
 }
 function SessionsCard() {
+    const sessions = [
+        {
+            day: 'Today',
+            time: '10:00 AM',
+            title: 'Hiragana Practice',
+            path: 'Japanese Language for Beginners',
+            icon: Play,
+        },
+        {
+            day: 'Today',
+            time: '2:00 PM',
+            title: 'Composition Basics',
+            path: 'Photography Fundamentals',
+            icon: Clock3,
+        },
+        {
+            day: 'Tomorrow',
+            time: '10:00 AM',
+            title: 'Components in Laravel',
+            path: 'Learn Laravel',
+            icon: Code2,
+        },
+    ];
+
     return (
         <Card className="border-border/70 bg-card/60 py-2 shadow-none">
             <CardContent className="px-4 py-2">
@@ -392,31 +417,9 @@ function SessionsCard() {
                     </Button>
                 </div>
                 <div className="mt-4 space-y-3">
-                    {[
-                        [
-                            'Today',
-                            '10:00 AM',
-                            'Hiragana Practice',
-                            'Japanese Language for Beginners',
-                            Play,
-                        ],
-                        [
-                            'Today',
-                            '2:00 PM',
-                            'Composition Basics',
-                            'Photography Fundamentals',
-                            Clock3,
-                        ],
-                        [
-                            'Tomorrow',
-                            '10:00 AM',
-                            'Components in Laravel',
-                            'Learn Laravel',
-                            CodeIcon,
-                        ],
-                    ].map(([day, time, title, path, Icon]) => (
+                    {sessions.map(({ day, time, title, path, icon: Icon }) => (
                         <div
-                            key={title as string}
+                            key={title}
                             className="flex items-center gap-3 border-b border-border/50 pb-3 last:border-0"
                         >
                             <span className="size-2 rounded-full bg-emerald-300" />
@@ -427,9 +430,9 @@ function SessionsCard() {
                                 <p className="text-xs text-muted-foreground">
                                     {day} · {time}
                                 </p>
-                                <p className="font-medium">{title as string}</p>
+                                <p className="font-medium">{title}</p>
                                 <p className="truncate text-xs text-muted-foreground">
-                                    {path as string}
+                                    {path}
                                 </p>
                             </div>
                             <ChevronRight className="size-4 text-muted-foreground" />
@@ -439,9 +442,6 @@ function SessionsCard() {
             </CardContent>
         </Card>
     );
-}
-function CodeIcon() {
-    return <span className="font-mono text-sm">&lt;/&gt;</span>;
 }
 
 Dashboard.layout = { breadcrumbs: [{ title: 'Dashboard', href: dashboard() }] };
